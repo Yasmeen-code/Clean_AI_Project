@@ -1,11 +1,13 @@
 import os
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-DATA_PATH = "Indoor_Plant_Health_and_Growth_Factors.csv" 
+DATA_PATH = "Indoor_Plant_Health_and_Growth_Factors.csv"
 
 if not os.path.exists(DATA_PATH):
-    raise FileNotFoundError(f"Data file not found: {DATA_PATH}")
+    raise FileNotFoundError(f"Data file not found: {os.path.abspath(DATA_PATH)}")
 
 df = pd.read_csv(DATA_PATH)
 
@@ -17,6 +19,20 @@ print(df.head())
 
 print("\nMissing values per column:\n")
 print(df.isna().sum())
+
+numeric_df = df.select_dtypes(include=['float64', 'int64'])
+if numeric_df.shape[1] == 0:
+    print("لا توجد أعمدة رقمية لحساب correlation.")
+else:
+    corr = numeric_df.corr()
+    print("\nCorrelation matrix (top-left 5x5):\n", corr.iloc[:5, :5])
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(corr, annot=True, linewidths=0.5, fmt=".2f", cmap="viridis")
+    plt.title("Correlation heatmap")
+    plt.tight_layout()
+    plt.show()
+
 
 # --------- Drop unnecessary columns ----------
 columns_to_drop = ['Plant_ID', 'Health_Notes']
@@ -41,6 +57,17 @@ for col in df.columns:
 
 print("\nAfter filling missing values:\n")
 print(df.isna().sum())
+
+numeric_df = df.select_dtypes(include=['float64', 'int64'])
+corr = numeric_df.corr()
+print("\nCorrelation matrix (top-left 5x5):\n", corr.iloc[:5, :5])
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr, annot=True, linewidths=0.5, fmt=".2f", cmap="viridis")
+plt.title("Correlation heatmap")
+plt.tight_layout()
+plt.show()
+
 
 # --------- Removing Outliers using IQR ----------
 
@@ -83,9 +110,36 @@ scaler = StandardScaler()
 df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
 
 print("\nScaling completed. Numeric columns are standardized.")
-# --------- Save cleaned dataset to a new file ----------
-OUTPUT_PATH = "Indoor_Plant_Health_and_Growth_Factors_CLEANED.csv"
 
-df.to_csv(OUTPUT_PATH, index=False)
+numeric_df = df.select_dtypes(include=['float64', 'int64'])
+corr = numeric_df.corr()
+print("\nCorrelation matrix (top-left 5x5):\n", corr.iloc[:5, :5])
 
-print(f"\nCleaned dataset saved successfully as: {OUTPUT_PATH}")
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr, annot=True, linewidths=0.5, fmt=".2f", cmap="viridis")
+plt.title("Correlation heatmap")
+plt.tight_layout()
+plt.show()
+
+#  Encode categorical columns 
+cat_cols = df.select_dtypes(include="object").columns
+encoder = LabelEncoder()
+for col in cat_cols:
+    df[col] = encoder.fit_transform(df[col])
+print(f" Encoded categorical columns: {list(cat_cols)}")
+
+# Standardize numerical columns 
+num_cols = df.select_dtypes(include=["int64", "float64"]).columns
+scaler = StandardScaler()
+df[num_cols] = scaler.fit_transform(df[num_cols])
+print(" Applied Standardization to numerical columns.")
+
+numeric_df = df.select_dtypes(include=['float64', 'int64'])
+corr = numeric_df.corr()
+print("\nCorrelation matrix (top-left 5x5):\n", corr.iloc[:5, :5])
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr, annot=True, linewidths=0.5, fmt=".2f", cmap="viridis")
+plt.title("Correlation heatmap")
+plt.tight_layout()
+plt.show()
