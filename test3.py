@@ -5,6 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import metrics
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 DATA_PATH = "Indoor_Plant_Health_and_Growth_Factors.csv"
 
@@ -37,6 +39,9 @@ categorical_features = X.select_dtypes(include=['object']).columns.tolist()
 
 print("\nNumeric features:", numeric_features)
 print("Categorical features :", categorical_features)
+
+sns.pairplot(df)
+plt.show()
 
 # One-Hot Encoding for categorical columns
 encoder = OneHotEncoder(sparse_output=False, drop='first')
